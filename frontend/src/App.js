@@ -14,7 +14,7 @@ import DashboardPage from "./pages/DashboardPage"
 import SellTicketsPage from "./pages/SellTicketsPage"
 import BuyTicketsPage from "./pages/BuyTicketsPage"
 import ReviewSellerPage from "./pages/ReviewSellerPage"
-import MarketplacePage from './pages/MarketplacePage';
+import MarketplacePage from "./pages/MarketplacePage"
 
 // Create theme
 const theme = createTheme({
@@ -39,6 +39,7 @@ const App = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/marketplace" element={<MarketplacePage />} />
 
             <Route
               path="/dashboard"
@@ -57,9 +58,7 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-            <Route
-                path="/marketplace"
-                element={<MarketplacePage />} />
+
             <Route
               path="/buy"
               element={

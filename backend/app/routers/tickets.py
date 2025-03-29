@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from typing import List
 from .. import models, schemas, auth
 from ..database import get_db
-
+# from fastapi import Body
+# from typing import Optional
 router = APIRouter(
     prefix="/tickets",
     tags=["tickets"],
@@ -51,9 +52,27 @@ def read_ticket(ticket_id: int, db: Session = Depends(get_db)):
     return db_ticket
 
 
+@router.get("/user/{user_id}", response_model=List[schemas.Ticket])
+def get_user_tickets(user_id: int, db: Session = Depends(get_db)):
+    """Get all tickets purchased by a specific user"""
+    # Print for debugging
+    print(f"Fetching tickets for user ID: {user_id}")
+
+    # Query tickets with the specified buyer_id
+    tickets = db.query(models.Ticket).filter(models.Ticket.buyer_id == user_id).all()
+
+    # Print results for debugging
+    print(f"Found {len(tickets)} tickets for user {user_id}")
+    for ticket in tickets:
+        print(f"Ticket {ticket.ticket_id}: buyer_id={ticket.buyer_id}, is_sold={ticket.is_sold}")
+
+    return tickets
+
+
 @router.put("/{ticket_id}/buy", response_model=schemas.Ticket)
 def buy_ticket(
         ticket_id: int,
+        # matched_request_id: Optional[int] = Body(None), ## ADDED 3
         db: Session = Depends(get_db),
         current_user: models.User = Depends(auth.get_current_user)
 ):
@@ -74,6 +93,12 @@ def buy_ticket(
     db_ticket.buyer_id = current_user.user_id
     db_ticket.is_sold = True
 
+    # if matched_request_id: ## ADDED 4
+    #     db_request = db.query(models.BuyRequest).filter(models.BuyRequest.request_id == matched_request_id).first()
+    #     if db_request:
+    #         db_request.fulfilled = True
+    #         db.commit()
+
     # Create transaction
     db_transaction = models.Transaction(
         ticket_id=db_ticket.ticket_id,
@@ -86,4 +111,7 @@ def buy_ticket(
     db.commit()
     db.refresh(db_ticket)
     return db_ticket
+
+
+
 

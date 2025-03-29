@@ -19,12 +19,12 @@ const Navbar = () => {
           TicketMarket
         </Typography>
         <Box>
+          <Button color="inherit" component={Link} to="/marketplace">
+            Marketplace
+          </Button>
+
           {isAuthenticated ? (
             <>
-
-              <Button color="inherit" component={Link} to="/marketplace">
-  Marketplace
-</Button>
               <Button color="inherit" component={Link} to="/dashboard">
                 Dashboard
               </Button>

@@ -52,8 +52,11 @@ export const createTicket = (ticketData) => {
 };
 
 export const buyTicket = (id) => {
-  return api.put(`/tickets/${id}/buy`);
+ return api.put(`/tickets/${id}/buy`);
 };
+//export const buyTicket = (id, matchedRequestId = null) => {
+ // return api.put(`/tickets/${id}/buy`, { matched_request_id: matchedRequestId });
+//};
 
 // Sell listing services
 export const createSellListing = (listingData) => {
@@ -85,6 +88,16 @@ export const createReview = (reviewData) => {
 export const getSellerReviews = (sellerId) => {
   return api.get(`/reviews/seller/${sellerId}`);
 };
+
+// Add this to your api.js file
+export const getUserTickets = (userId) => {
+  return api.get(`/tickets/user/${userId}`)
+}
+
+// Add this function to your api.js file
+export const updateListingStatus = (listingData) => {
+  return api.put(`/sell-listings/status`, listingData)
+}
 
 
 export default api;

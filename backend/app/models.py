@@ -1,7 +1,7 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float, Date, DateTime, Text, CheckConstraint
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float, Date, JSON, DateTime, Text, CheckConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-
+from sqlalchemy.dialects.postgresql import ARRAY ## ADD HERE3
 from .database import Base
 
 
@@ -99,6 +99,8 @@ class SellListing(Base):
     price = Column(Float, nullable=False)
     quantity = Column(Integer, nullable=False)
     created_date = Column(DateTime, default=func.now())
+    is_available = Column(Boolean, default=True) ## ADDED HERE
+
 
     # Relationships
     seller = relationship("User", back_populates="sell_listings")
@@ -119,6 +121,7 @@ class BuyRequest(Base):
     max_price = Column(Float, nullable=False)
     quantity = Column(Integer, nullable=False)
     created_date = Column(DateTime, default=func.now())
+    fulfilled = Column(Boolean, default=False)
 
     # Relationships
     buyer = relationship("User", back_populates="buy_requests")

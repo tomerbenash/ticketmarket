@@ -107,6 +107,8 @@ class SellListingBase(BaseModel):
     event_date: date
     price: float
     quantity: int
+    is_available: bool = True## ADDED HERE
+
 
     @validator('category')
     def validate_category(cls, v):
@@ -114,8 +116,12 @@ class SellListingBase(BaseModel):
             raise ValueError('Category must be Concert, Sports, Theater, or Other')
         return v
 
+
 class SellListingCreate(SellListingBase):
     seller_id: int
+    is_available: bool = True ## ADD HERE
+
+
 
 class SellListing(SellListingBase):
     sell_id: int
@@ -155,3 +161,15 @@ class MatchNotification(BaseModel):
     buy_request: BuyRequest
     matching_listings: List[SellListing]
 
+# class BuyRequestOut(BaseModel): ## ADDED 2
+#     request_id: int
+#     event_name: str
+#     category: str
+#     event_date: date
+#     max_price: float
+#     quantity: int
+#     created_date: datetime
+#     fulfilled: bool  # 👈 ADD THIS
+#
+#     class Config:
+#         orm_mode = True

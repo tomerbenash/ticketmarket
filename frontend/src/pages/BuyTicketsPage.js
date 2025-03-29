@@ -1,50 +1,41 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Container, Typography, Box, Grid, Paper, Button, Tabs, Tab, TextField, MenuItem } from "@mui/material"
+import { Container, Typography, Box, Grid, Paper, Button, Tabs, Tab, TextField, MenuItem, Chip } from "@mui/material"
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import { getTickets, getSellListings, createBuyRequest, buyTicket } from "../services/api"
-import api from "../services/api"
 import { useAuth } from "../context/AuthContext"
 
 const BuyTicketsPage = () => {
   const { user } = useAuth()
   const [tabValue, setTabValue] = useState(0)
-  const [availableTickets, setAvailableTickets] = useState([])
+  const [tickets, setTickets] = useState([])
   const [sellListings, setSellListings] = useState([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState({ type: "", text: "" })
+  const [matchedRequestId, setMatchedRequestId] = useState(null) // Store the ID of the request that matched
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+
+      // Fetch available tickets
+      const ticketsResponse = await getTickets()
+      setTickets(ticketsResponse.data)
+
+      // Fetch sell listings
+      const listingsResponse = await getSellListings()
+      setSellListings(listingsResponse.data)
+    } catch (error) {
+      console.error("Error fetching data:", error)
+      setMessage({ type: "error", text: "Failed to load data. Please try again." })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-
-        // Fetch sell listings for the Available Tickets tab
-        const listingsResponse = await getSellListings()
-        console.log("Sell listings:", listingsResponse.data);
-        
-        // Filter for listings with quantity > 0
-        const availableListings = listingsResponse.data.filter(listing => listing.quantity > 0);
-        setSellListings(availableListings);
-
-        // Also fetch available tickets for the buying process
-        const ticketsResponse = await getTickets()
-        console.log("All tickets:", ticketsResponse.data);
-        
-        // Filter for available tickets (not sold)
-        const available = ticketsResponse.data.filter(ticket => !ticket.is_sold);
-        console.log("Available tickets:", available);
-        setAvailableTickets(available);
-      } catch (error) {
-        console.error("Error fetching data:", error)
-        setMessage({ type: "error", text: "Failed to load data. Please try again." })
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchData()
   }, [])
 
@@ -52,62 +43,68 @@ const BuyTicketsPage = () => {
     setTabValue(newValue)
   }
 
-  const handleBuyTicket = async (sellListingId) => {
+  const handleBuyTicket = async (ticketId) => {
     try {
-      // Get the sell listing details
-      const listing = sellListings.find(listing => listing.sell_id === sellListingId);
-      
-      if (!listing) {
-        setMessage({ type: "error", text: "Listing not found." });
-        return;
-      }
-      
-      console.log("Buying from listing:", listing);
-      
-      // Find an available ticket that matches this listing
-      const matchingTicket = availableTickets.find(ticket => 
-        ticket.event_name === listing.event_name &&
-        ticket.category === listing.category &&
-        ticket.event_date === listing.event_date &&
-        ticket.price === listing.price &&
-        ticket.seller_id === listing.seller_id &&
-        !ticket.is_sold
-      );
-      
-      if (!matchingTicket) {
-        setMessage({ type: "error", text: "No available tickets for this listing." });
-        return;
-      }
-      
-      console.log("Found matching ticket:", matchingTicket);
-      
-      // Buy the ticket
-      await buyTicket(matchingTicket.ticket_id);
-      
-      // Update available tickets list
-      setAvailableTickets(availableTickets.filter(ticket => ticket.ticket_id !== matchingTicket.ticket_id));
-      
-      // Update sell listings (reduce quantity)
-      setSellListings(
-        sellListings.map((listing) => {
-          if (listing.sell_id === sellListingId) {
-            const updatedListing = { ...listing, quantity: listing.quantity - 1 };
-            return updatedListing;
-          }
-          return listing;
-        }).filter(listing => listing.quantity > 0) // Remove listings with zero quantity
-      );
+      await buyTicket(ticketId)
 
-      setMessage({ type: "success", text: "Ticket purchased successfully!" });
+      // Get the ticket that was purchased
+      const purchasedTicket = tickets.find((t) => t.ticket_id === ticketId)
+
+      // Remove the purchased ticket from the list
+      setTickets(tickets.filter((ticket) => ticket.ticket_id !== ticketId))
+
+      setMessage({ type: "success", text: "Ticket purchased successfully!" })
+
+      // Dispatch a custom event that can be listened to by other components
+      const ticketPurchaseEvent = new CustomEvent("ticketPurchased", {
+        detail: {
+          ticketId: ticketId,
+          eventName: purchasedTicket?.event_name,
+          eventDate: purchasedTicket?.event_date,
+          price: purchasedTicket?.price,
+          sellerId: purchasedTicket?.seller_id,
+          category: purchasedTicket?.category,
+          matchedRequestId: matchedRequestId, // Include the matched request ID if it exists
+        },
+      })
+      window.dispatchEvent(ticketPurchaseEvent)
+
+      // Refresh data to update listings
+      fetchData()
 
       // Clear message after 5 seconds
       setTimeout(() => {
-        setMessage({ type: "", text: "" });
-      }, 5000);
+        setMessage({ type: "", text: "" })
+      }, 5000)
     } catch (error) {
-      console.error("Error buying ticket:", error);
-      setMessage({ type: "error", text: "Failed to purchase ticket. Please try again." });
+      console.error("Error buying ticket:", error)
+      setMessage({ type: "error", text: "Failed to purchase ticket. Please try again." })
     }
+  }
+
+  // Group tickets by event, date, price, and seller
+  const groupTickets = (ticketList) => {
+    const groupedTickets = {}
+
+    ticketList
+      .filter((ticket) => !ticket.is_sold)
+      .forEach((ticket) => {
+        // Create a unique key for each group of tickets
+        const key = `${ticket.event_name}-${ticket.category}-${ticket.event_date}-${ticket.price}-${ticket.seller_id}`
+
+        if (!groupedTickets[key]) {
+          groupedTickets[key] = {
+            ...ticket,
+            count: 1,
+            ticketIds: [ticket.ticket_id],
+          }
+        } else {
+          groupedTickets[key].count += 1
+          groupedTickets[key].ticketIds.push(ticket.ticket_id)
+        }
+      })
+
+    return Object.values(groupedTickets)
   }
 
   // Buy request form validation
@@ -141,14 +138,12 @@ const BuyTicketsPage = () => {
           quantity: Number(values.quantity),
         }
 
-        await createBuyRequest(formattedValues)
+        // Create the buy request
+        const response = await createBuyRequest(formattedValues)
+        const requestId = response.data.request_id
+
         setMessage({ type: "success", text: "Buy request created successfully!" })
         resetForm()
-
-        // Clear message after 5 seconds
-        setTimeout(() => {
-          setMessage({ type: "", text: "" })
-        }, 5000)
 
         // Check for matching listings
         const matches = sellListings.filter(
@@ -162,9 +157,38 @@ const BuyTicketsPage = () => {
         if (matches.length > 0) {
           setMessage({
             type: "info",
-            text: "We found matching tickets for your request! Check the available tickets tab.",
+            text: "We found matching tickets for your request! Check the available tickets tab for QUICK BUY.",
           })
+
+          // Store the request ID that has matches
+          setMatchedRequestId(requestId)
+
+          // Switch to the Available Tickets tab
+          setTabValue(0)
+
+          // Store the match information in localStorage
+          const matchInfo = {
+            requestId: requestId,
+            matches: matches.map((listing) => ({
+              listingId: listing.sell_id,
+              eventName: listing.event_name,
+              eventDate: listing.event_date,
+              price: listing.price,
+              sellerId: listing.seller_id,
+              category: listing.category,
+            })),
+          }
+
+          // Get existing matches from localStorage or initialize empty array
+          const existingMatches = JSON.parse(localStorage.getItem("buyRequestMatches") || "[]")
+          existingMatches.push(matchInfo)
+          localStorage.setItem("buyRequestMatches", JSON.stringify(existingMatches))
         }
+
+        // Clear message after 5 seconds
+        setTimeout(() => {
+          setMessage({ type: "", text: "" })
+        }, 5000)
       } catch (error) {
         console.error("Error creating buy request:", error)
         setMessage({ type: "error", text: "Failed to create buy request. Please try again." })
@@ -181,6 +205,9 @@ const BuyTicketsPage = () => {
       </Container>
     )
   }
+
+  // Group available tickets
+  const groupedTickets = groupTickets(tickets)
 
   return (
     <Container maxWidth="lg">
@@ -217,22 +244,31 @@ const BuyTicketsPage = () => {
           <Box sx={{ p: 3 }}>
             {tabValue === 0 && (
               <Grid container spacing={2}>
-                {sellListings.length > 0 ? (
-                  sellListings.map((listing) => (
-                    <Grid item xs={12} md={6} key={listing.sell_id}>
+                {groupedTickets.length > 0 ? (
+                  groupedTickets.map((groupedTicket) => (
+                    <Grid item xs={12} md={6} key={groupedTicket.ticket_id}>
                       <Paper sx={{ p: 2 }}>
-                        <Typography variant="h6">{listing.event_name}</Typography>
-                        <Typography variant="body2">Category: {listing.category}</Typography>
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1 }}>
+                          <Typography variant="h6">{groupedTicket.event_name}</Typography>
+                          {groupedTicket.count > 1 && (
+                            <Chip
+                              label={`${groupedTicket.count} available`}
+                              color="primary"
+                              size="small"
+                              sx={{ fontWeight: "medium" }}
+                            />
+                          )}
+                        </Box>
+                        <Typography variant="body2">Category: {groupedTicket.category}</Typography>
                         <Typography variant="body2">
-                          Date: {new Date(listing.event_date).toLocaleDateString()}
+                          Date: {new Date(groupedTicket.event_date).toLocaleDateString()}
                         </Typography>
-                        <Typography variant="body2">Price: ${listing.price}</Typography>
-                        <Typography variant="body2">Available: {listing.quantity}</Typography>
+                        <Typography variant="body2">Price: ${groupedTicket.price}</Typography>
                         <Button
                           variant="contained"
                           color="primary"
                           sx={{ mt: 2 }}
-                          onClick={() => handleBuyTicket(listing.sell_id)}
+                          onClick={() => handleBuyTicket(groupedTicket.ticketIds[0])}
                         >
                           Buy Now
                         </Button>

@@ -48,6 +48,7 @@ def create_sell_listing(
         )
         db.add(db_ticket)
 
+
     db.commit()
 
     # Check for matching buy requests
