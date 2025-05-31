@@ -85,8 +85,8 @@ export const createReview = (reviewData) => {
   return api.post('/reviews/', reviewData);
 };
 
-export const getSellerReviews = (sellerId) => {
-  return api.get(`/reviews/seller/${sellerId}`);
+export const getReviews = () => {
+  return api.get(`/reviews/`);
 };
 
 // Add this to your api.js file

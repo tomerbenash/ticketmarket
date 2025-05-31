@@ -13,13 +13,13 @@ const RegisterPage = () => {
   const [error, setError] = useState("")
 
   const validationSchema = Yup.object({
-    username: Yup.string().required("Username is required"),
-    email: Yup.string().email("Invalid email address").required("Email is required"),
-    password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
+    username: Yup.string().required("שדה חובה"),
+    email: Yup.string().email("אמייל לא תקין").required("שדה חובה"),
+    password: Yup.string().min(6, "סיסמה חייבת להיות לפחות 6 תווים").required("שדה חובה"),
     confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password"), null], "Passwords must match")
-      .required("Confirm password is required"),
-    role: Yup.string().required("Role is required"),
+      .oneOf([Yup.ref("password"), null], "סיסמאות לא תואמות")
+      .required("שדה חובה"),
+    role: Yup.string().required("שדה חובה"),
     phoneNumber: Yup.string(),
   })
 
@@ -38,9 +38,9 @@ const RegisterPage = () => {
         // Remove confirmPassword before sending to API
         const { confirmPassword, ...userData } = values
         await register(userData)
-        navigate("/login", { state: { message: "Registration successful! Please log in." } })
+        navigate("/login", { state: { message: "נרשמת בהצלחה. בבקשה התחבר" } })
       } catch (err) {
-        setError(err.response?.data?.detail || "Registration failed. Please try again.")
+        setError(err.response?.data?.detail || "הרשמה נכשלה. אנא נסו שנית.")
       }
     },
   })
@@ -49,7 +49,7 @@ const RegisterPage = () => {
     <Container maxWidth="sm">
       <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
         <Typography variant="h4" component="h1" align="center" gutterBottom>
-          Create an Account
+          יצירת משתמש
         </Typography>
 
         {error && (
@@ -65,7 +65,7 @@ const RegisterPage = () => {
                 fullWidth
                 id="username"
                 name="username"
-                label="Username"
+                label="שם משתמש"
                 value={formik.values.username}
                 onChange={formik.handleChange}
                 error={formik.touched.username && Boolean(formik.errors.username)}
@@ -78,7 +78,7 @@ const RegisterPage = () => {
                 fullWidth
                 id="email"
                 name="email"
-                label="Email Address"
+                label="כתובת אימייל"
                 value={formik.values.email}
                 onChange={formik.handleChange}
                 error={formik.touched.email && Boolean(formik.errors.email)}
@@ -91,7 +91,7 @@ const RegisterPage = () => {
                 fullWidth
                 id="password"
                 name="password"
-                label="Password"
+                label="סיסמה"
                 type="password"
                 value={formik.values.password}
                 onChange={formik.handleChange}
@@ -105,7 +105,7 @@ const RegisterPage = () => {
                 fullWidth
                 id="confirmPassword"
                 name="confirmPassword"
-                label="Confirm Password"
+                label="אימות סיסמה"
                 type="password"
                 value={formik.values.confirmPassword}
                 onChange={formik.handleChange}
@@ -120,15 +120,15 @@ const RegisterPage = () => {
                 id="role"
                 name="role"
                 select
-                label="Role"
+                label="סוג משתמש"
                 value={formik.values.role}
                 onChange={formik.handleChange}
                 error={formik.touched.role && Boolean(formik.errors.role)}
                 helperText={formik.touched.role && formik.errors.role}
               >
-                <MenuItem value="Buyer">Buyer</MenuItem>
-                <MenuItem value="Seller">Seller</MenuItem>
-                <MenuItem value="Both">Both</MenuItem>
+                <MenuItem value="Buyer">קונה</MenuItem>
+                <MenuItem value="Seller">מוכר</MenuItem>
+                <MenuItem value="Both">קונה ומוכר</MenuItem>
               </TextField>
             </Grid>
 
@@ -137,7 +137,7 @@ const RegisterPage = () => {
                 fullWidth
                 id="phoneNumber"
                 name="phoneNumber"
-                label="Phone Number (Optional)"
+                label="מספר טלפון (לא חובה)"
                 value={formik.values.phoneNumber}
                 onChange={formik.handleChange}
                 error={formik.touched.phoneNumber && Boolean(formik.errors.phoneNumber)}
@@ -154,11 +154,11 @@ const RegisterPage = () => {
             sx={{ mt: 3, mb: 2 }}
             disabled={formik.isSubmitting}
           >
-            Register
+            הירשם
           </Button>
 
           <Button fullWidth variant="text" onClick={() => navigate("/login")}>
-            Already have an account? Sign in
+            יש לך כבר משתמש? התחבר כאן
           </Button>
         </Box>
       </Paper>

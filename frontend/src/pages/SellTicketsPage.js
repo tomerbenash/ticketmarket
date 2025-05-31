@@ -13,14 +13,14 @@ const SellTicketsPage = () => {
   const [error, setError] = useState("")
 
   const validationSchema = Yup.object({
-    event_name: Yup.string().required("Event name is required"),
-    category: Yup.string().required("Category is required"),
-    event_date: Yup.date().required("Event date is required"),
-    price: Yup.number().positive("Price must be positive").required("Price is required"),
+    event_name: Yup.string().required("שדה חובה"),
+    category: Yup.string().required("שדה חובה"),
+    event_date: Yup.date().required("שדה חובה"),
+    price: Yup.number().positive("חייב להיות מספר חיובי").required("שדה חובה"),
     quantity: Yup.number()
-      .integer("Quantity must be an integer")
-      .positive("Quantity must be positive")
-      .required("Quantity is required"),
+      .integer("חייב להיות מספר שלם")
+      .positive("כמות חייבת להיות חיובית")
+      .required("שדה חובה"),
   })
 
   const formik = useFormik({
@@ -43,7 +43,7 @@ const SellTicketsPage = () => {
         }
 
         await createSellListing(formattedValues)
-        setSuccess("Listing created successfully!")
+        setSuccess("פורסם בהצלחה!")
         setError("")
         resetForm()
 
@@ -52,7 +52,7 @@ const SellTicketsPage = () => {
           setSuccess("")
         }, 5000)
       } catch (err) {
-        setError(err.response?.data?.detail || "Failed to create listing. Please try again.")
+        setError(err.response?.data?.detail || "פרסום נכשל. אנא נסו שנית.")
         setSuccess("")
       }
     },
@@ -62,7 +62,7 @@ const SellTicketsPage = () => {
     <Container maxWidth="md">
       <Box sx={{ my: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Sell Tickets
+          מכירת כרטיסים
         </Typography>
 
         {success && (
@@ -85,7 +85,7 @@ const SellTicketsPage = () => {
                   fullWidth
                   id="event_name"
                   name="event_name"
-                  label="Event Name"
+                  label="שם אירוע"
                   value={formik.values.event_name}
                   onChange={formik.handleChange}
                   error={formik.touched.event_name && Boolean(formik.errors.event_name)}
@@ -99,16 +99,16 @@ const SellTicketsPage = () => {
                   id="category"
                   name="category"
                   select
-                  label="Category"
+                  label="קטגוריה"
                   value={formik.values.category}
                   onChange={formik.handleChange}
                   error={formik.touched.category && Boolean(formik.errors.category)}
                   helperText={formik.touched.category && formik.errors.category}
                 >
-                  <MenuItem value="Concert">Concert</MenuItem>
-                  <MenuItem value="Sports">Sports</MenuItem>
-                  <MenuItem value="Theater">Theater</MenuItem>
-                  <MenuItem value="Other">Other</MenuItem>
+                  <MenuItem value="Concert">הופעה</MenuItem>
+                  <MenuItem value="Sports">ספורט</MenuItem>
+                  <MenuItem value="Theater">הצגה</MenuItem>
+                  <MenuItem value="Other">אחר</MenuItem>
                 </TextField>
               </Grid>
 
@@ -117,7 +117,7 @@ const SellTicketsPage = () => {
                   fullWidth
                   id="event_date"
                   name="event_date"
-                  label="Event Date"
+                  label="תאריך"
                   type="date"
                   InputLabelProps={{ shrink: true }}
                   value={formik.values.event_date}
@@ -132,7 +132,7 @@ const SellTicketsPage = () => {
                   fullWidth
                   id="price"
                   name="price"
-                  label="Price ($)"
+                  label="מחיר (₪)"
                   type="number"
                   value={formik.values.price}
                   onChange={formik.handleChange}
@@ -146,7 +146,7 @@ const SellTicketsPage = () => {
                   fullWidth
                   id="quantity"
                   name="quantity"
-                  label="Quantity"
+                  label="כמות"
                   type="number"
                   value={formik.values.quantity}
                   onChange={formik.handleChange}
@@ -164,7 +164,7 @@ const SellTicketsPage = () => {
               sx={{ mt: 3 }}
               disabled={formik.isSubmitting}
             >
-              Create Listing
+              פרסם כרטיסים
             </Button>
           </Box>
         </Paper>

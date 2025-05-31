@@ -35,14 +35,36 @@ def create_buy_request(
     db.refresh(db_request)
     return db_request
 
-@router.get("/", response_model=List[schemas.BuyRequest])
+@router.get("/")
 def read_buy_requests(
-    skip: int = 0, 
-    limit: int = 100, 
-    db: Session = Depends(get_db)
+        skip: int = 0,
+        limit: int = 100,
+        db: Session = Depends(get_db)
 ):
+    # Get all buy requests
     requests = db.query(models.BuyRequest).offset(skip).limit(limit).all()
-    return requests
+
+    # Get all sold tickets
+    sold_tickets = db.query(models.Ticket).filter(models.Ticket.is_sold == True).all()
+
+    results = []
+    for request in requests:
+        # Check if any sold ticket fulfills this request
+        matched = any(
+            ticket.buyer_id == request.buyer_id and
+            ticket.event_name == request.event_name and
+            ticket.event_date == request.event_date and
+            ticket.price == request.max_price
+            for ticket in sold_tickets
+        )
+
+        request_dict = request.__dict__.copy()
+        request_dict["fulfilled"] = matched
+        results.append(request_dict)
+
+    print(results)
+
+    return results
 
 @router.get("/{request_id}", response_model=schemas.BuyRequest)
 def read_buy_request(request_id: int, db: Session = Depends(get_db)):

@@ -15,8 +15,8 @@ const LoginPage = () => {
   const message = location.state?.message || ""
 
   const validationSchema = Yup.object({
-    email: Yup.string().email("Invalid email address").required("Email is required"),
-    password: Yup.string().required("Password is required"),
+    email: Yup.string().email("אימייל לא תקין").required("שדה חובה"),
+    password: Yup.string().required("שדה חובה"),
   })
 
   const formik = useFormik({
@@ -30,7 +30,7 @@ const LoginPage = () => {
         await login(values)
         navigate("/dashboard")
       } catch (err) {
-        setError(err.response?.data?.detail || "Login failed. Please check your credentials.")
+        setError(err.response?.data?.detail || "התחברות נכשלה. בדקו את הפרטים.")
       }
     },
   })
@@ -39,7 +39,7 @@ const LoginPage = () => {
     <Container maxWidth="sm">
       <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
         <Typography variant="h4" component="h1" align="center" gutterBottom>
-          Sign In
+          התחברות
         </Typography>
 
         {message && (
@@ -60,7 +60,7 @@ const LoginPage = () => {
             fullWidth
             id="email"
             name="email"
-            label="Email Address"
+            label="כתובת אימייל"
             autoComplete="email"
             autoFocus
             value={formik.values.email}
@@ -74,7 +74,7 @@ const LoginPage = () => {
             fullWidth
             id="password"
             name="password"
-            label="Password"
+            label="סיסמה"
             type="password"
             autoComplete="current-password"
             value={formik.values.password}
@@ -91,11 +91,11 @@ const LoginPage = () => {
             sx={{ mt: 3, mb: 2 }}
             disabled={formik.isSubmitting}
           >
-            Sign In
+            התחבר
           </Button>
 
           <Button fullWidth variant="text" onClick={() => navigate("/register")}>
-            Don't have an account? Register
+            אין לך עדיין משתמש? הירשם עכשיו!
           </Button>
         </Box>
       </Paper>

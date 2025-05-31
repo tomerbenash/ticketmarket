@@ -176,10 +176,10 @@ const DashboardPage = () => {
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Dashboard
+          איזור אישי
         </Typography>
         <Typography variant="subtitle1" gutterBottom>
-          Welcome back, {user.username}!
+          ברוך שובך, {user.username}!
         </Typography>
 
         {error && (
@@ -190,9 +190,9 @@ const DashboardPage = () => {
 
         <Paper sx={{ mt: 3 }}>
           <Tabs value={tabValue} onChange={handleTabChange} indicatorColor="primary" textColor="primary" centered>
-            {showListingsTab && <Tab label="My Listings" />}
-            {showRequestsTab && <Tab label="My Requests" />}
-            {showTicketsTab && <Tab label="My Tickets" />}
+            {showListingsTab && <Tab label="הפרסומים שלי" />}
+            {showRequestsTab && <Tab label="הבקשות שלי" />}
+            {showTicketsTab && <Tab label="הכרטיסים שלי" />}
           </Tabs>
 
           <Box sx={{ p: 3 }}>
@@ -215,7 +215,7 @@ const DashboardPage = () => {
                         >
                           {isSoldOut && (
                             <Chip
-                              label="SOLD OUT"
+                              label="שלח כרטיסים למוכר"
                               color="error"
                               sx={{
                                 position: "absolute",
@@ -227,23 +227,23 @@ const DashboardPage = () => {
                             />
                           )}
                           <Typography variant="h6">{listing.event_name}</Typography>
-                          <Typography variant="body2">Category: {listing.category}</Typography>
+                          <Typography variant="body2">קטגוריה: {listing.category}</Typography>
                           <Typography variant="body2">
-                            Date: {new Date(listing.event_date).toLocaleDateString()}
+                            תאריך: {new Date(listing.event_date).toLocaleDateString()}
                           </Typography>
-                          <Typography variant="body2">Price: ${listing.price}</Typography>
+                          <Typography variant="body2">מחיר: ${listing.price}</Typography>
                           <Typography variant="body2">
-                            Available: {availableQuantity} of {listing.quantity}
+                            כרטיסים זמינים: {availableQuantity} מתוך {listing.quantity}
                           </Typography>
                           <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
-                            Listed on: {new Date(listing.created_date).toLocaleDateString()}
+                            פורסם ב: {new Date(listing.created_date).toLocaleDateString()}
                           </Typography>
                         </Paper>
                       </Grid>
                     )
                   })
                 ) : (
-                  <Typography>You don't have any active listings.</Typography>
+                  <Typography>אין לך פרסומים פעילים.</Typography>
                 )}
               </Grid>
             )}
@@ -266,7 +266,7 @@ const DashboardPage = () => {
                         >
                           {isFulfilled && (
                             <Chip
-                              label="FULFILLED"
+                              label="מומש"
                               color="primary"
                               sx={{
                                 position: "absolute",
@@ -278,21 +278,21 @@ const DashboardPage = () => {
                             />
                           )}
                           <Typography variant="h6">{request.event_name}</Typography>
-                          <Typography variant="body2">Category: {request.category}</Typography>
+                          <Typography variant="body2">קטגוריה: {request.category}</Typography>
                           <Typography variant="body2">
-                            Date: {new Date(request.event_date).toLocaleDateString()}
+                            תאריך: {new Date(request.event_date).toLocaleDateString()}
                           </Typography>
-                          <Typography variant="body2">Max Price: ${request.max_price}</Typography>
-                          <Typography variant="body2">Quantity: {request.quantity}</Typography>
+                          <Typography variant="body2">מחיר מקסימלי: ₪{request.max_price}</Typography>
+                          <Typography variant="body2">כמות: {request.quantity}</Typography>
                           <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
-                            Requested on: {new Date(request.created_date).toLocaleDateString()}
+                            בוקש ב: {new Date(request.created_date).toLocaleDateString()}
                           </Typography>
                         </Paper>
                       </Grid>
                     )
                   })
                 ) : (
-                  <Typography>You don't have any active buy requests.</Typography>
+                  <Typography>אין לך בקשות קניה פעילות.</Typography>
                 )}
               </Grid>
             )}
@@ -305,23 +305,23 @@ const DashboardPage = () => {
                     <Grid item xs={12} md={6} key={ticket.ticket_id}>
                       <Paper sx={{ p: 2 }}>
                         <Typography variant="h6">{ticket.event_name}</Typography>
-                        <Typography variant="body2">Category: {ticket.category}</Typography>
+                        <Typography variant="body2">קטגוריה: {ticket.category}</Typography>
                         <Typography variant="body2">
-                          Date: {new Date(ticket.event_date).toLocaleDateString()}
+                          תאריך: {new Date(ticket.event_date).toLocaleDateString()}
                         </Typography>
-                        <Typography variant="body2">Price: ${ticket.price}</Typography>
-                        <Typography variant="body2">Ticket ID: {ticket.ticket_id}</Typography>
+                        <Typography variant="body2">מחיר: ₪{ticket.price}</Typography>
+                        <Typography variant="body2">Tמזהה כרטיס: {ticket.ticket_id}</Typography>
                         <Typography variant="body2" color="success.main">
-                          Status: Purchased
+                          סטטוס: נקנה
                         </Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
-                          Purchased on: {new Date(ticket.purchase_date || ticket.created_date).toLocaleDateString()}
+                          נרכש ב: {new Date(ticket.purchase_date || ticket.created_date).toLocaleDateString()}
                         </Typography>
                       </Paper>
                     </Grid>
                   ))
                 ) : (
-                  <Typography>You haven't purchased any tickets yet.</Typography>
+                  <Typography>טרם רכשת כרטיסים.</Typography>
                 )}
               </Grid>
             )}

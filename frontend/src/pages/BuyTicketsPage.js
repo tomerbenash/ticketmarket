@@ -1,7 +1,23 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Container, Typography, Box, Grid, Paper, Button, Tabs, Tab, TextField, MenuItem, Chip } from "@mui/material"
+import {
+  Container,
+  Typography,
+  Box,
+  Grid,
+  Paper,
+  Button,
+  Tabs,
+  Tab,
+  TextField,
+  MenuItem,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material"
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import { getTickets, getSellListings, createBuyRequest, buyTicket } from "../services/api"
@@ -15,6 +31,11 @@ const BuyTicketsPage = () => {
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState({ type: "", text: "" })
   const [matchedRequestId, setMatchedRequestId] = useState(null) // Store the ID of the request that matched
+
+  // New state variables for multiple ticket purchase
+  const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false)
+  const [selectedTicket, setSelectedTicket] = useState(null)
+  const [purchaseQuantity, setPurchaseQuantity] = useState(1)
 
   const fetchData = async () => {
     try {
@@ -53,7 +74,7 @@ const BuyTicketsPage = () => {
       // Remove the purchased ticket from the list
       setTickets(tickets.filter((ticket) => ticket.ticket_id !== ticketId))
 
-      setMessage({ type: "success", text: "Ticket purchased successfully!" })
+      setMessage({ type: "success", text: "הכרטיסים נרכשו בהצלחה. אימייל עם הכרטיסים ישלח אליך בהקדם" })
 
       // Dispatch a custom event that can be listened to by other components
       const ticketPurchaseEvent = new CustomEvent("ticketPurchased", {
@@ -75,10 +96,76 @@ const BuyTicketsPage = () => {
       // Clear message after 5 seconds
       setTimeout(() => {
         setMessage({ type: "", text: "" })
-      }, 5000)
+      }, 35000)
     } catch (error) {
       console.error("Error buying ticket:", error)
-      setMessage({ type: "error", text: "Failed to purchase ticket. Please try again." })
+      setMessage({ type: "error", text: "הקניה נכשלה. אנא נסו שנית." })
+    }
+  }
+
+  // New function to handle buying multiple tickets
+  const handleBuyMultipleTickets = async (groupedTicket, quantity) => {
+    try {
+      // Get the ticket IDs to purchase (limited by the requested quantity)
+      const ticketIdsToBuy = groupedTicket.ticketIds.slice(0, quantity)
+
+      // Purchase each ticket sequentially
+      for (const ticketId of ticketIdsToBuy) {
+        await buyTicket(ticketId)
+
+        // Get the ticket that was purchased
+        const purchasedTicket = tickets.find((t) => t.ticket_id === ticketId)
+
+        // Dispatch the same event as in the single ticket purchase
+        const ticketPurchaseEvent = new CustomEvent("ticketPurchased", {
+          detail: {
+            ticketId: ticketId,
+            eventName: purchasedTicket?.event_name,
+            eventDate: purchasedTicket?.event_date,
+            price: purchasedTicket?.price,
+            sellerId: purchasedTicket?.seller_id,
+            category: purchasedTicket?.category,
+            matchedRequestId: matchedRequestId,
+          },
+        })
+        window.dispatchEvent(ticketPurchaseEvent)
+      }
+
+      // Update the tickets list
+      setTickets(tickets.filter((ticket) => !ticketIdsToBuy.includes(ticket.ticket_id)))
+
+      // Show success message
+      setMessage({
+        type: "success",
+        text: `נקנו בהצלחה ${quantity} כרטיסים${quantity > 1 ? "s" : ""}!`,
+      })
+
+      // Refresh data to update listings
+      fetchData()
+
+      // Clear message after 5 seconds
+      setTimeout(() => {
+        setMessage({ type: "", text: "" })
+      }, 5000)
+    } catch (error) {
+      console.error("Error buying multiple tickets:", error)
+      setMessage({ type: "error", text: "קניה נכשלה. אנא נסו שנית" })
+    }
+  }
+
+  // New function to handle the Buy Now button click
+  const handleBuyButtonClick = (groupedTicket) => {
+    if (groupedTicket.count > 1) {
+      // If multiple tickets are available, open the dialog
+      setSelectedTicket(groupedTicket)
+      setPurchaseQuantity(1) // Reset to 1
+      setPurchaseDialogOpen(true)
+    } else {
+      // If only one ticket is available, buy it directly
+      if (window.confirm("האם אתם בטוחים שברצונכם לרכוש?")) {
+
+      handleBuyTicket(groupedTicket.ticketIds[0])
+      }
     }
   }
 
@@ -109,14 +196,14 @@ const BuyTicketsPage = () => {
 
   // Buy request form validation
   const validationSchema = Yup.object({
-    event_name: Yup.string().required("Event name is required"),
-    category: Yup.string().required("Category is required"),
-    event_date: Yup.date().required("Event date is required"),
-    max_price: Yup.number().positive("Price must be positive").required("Max price is required"),
+    event_name: Yup.string().required("שדה חובה"),
+    category: Yup.string().required("שדה חובה"),
+    event_date: Yup.date().required("שדה חובה"),
+    max_price: Yup.number().positive("מחיר חייב להיות חיובי").required("שדה חובה"),
     quantity: Yup.number()
-      .integer("Quantity must be an integer")
-      .positive("Quantity must be positive")
-      .required("Quantity is required"),
+      .integer("כמות חייבת להיות מספר שלם")
+      .positive("כמות חייבת להיות חיובית")
+      .required("שדה חובה"),
   })
 
   const formik = useFormik({
@@ -142,7 +229,7 @@ const BuyTicketsPage = () => {
         const response = await createBuyRequest(formattedValues)
         const requestId = response.data.request_id
 
-        setMessage({ type: "success", text: "Buy request created successfully!" })
+        setMessage({ type: "success", text: "הבקשה נוצרה בהצלחה" })
         resetForm()
 
         // Check for matching listings
@@ -157,7 +244,7 @@ const BuyTicketsPage = () => {
         if (matches.length > 0) {
           setMessage({
             type: "info",
-            text: "We found matching tickets for your request! Check the available tickets tab for QUICK BUY.",
+            text: "נמצאה התאמה מדוייקת לבקשתך. עברו בבקשה לכרטיסים זמינים לקניה מהירה!.",
           })
 
           // Store the request ID that has matches
@@ -188,10 +275,10 @@ const BuyTicketsPage = () => {
         // Clear message after 5 seconds
         setTimeout(() => {
           setMessage({ type: "", text: "" })
-        }, 5000)
+        }, 35000)
       } catch (error) {
         console.error("Error creating buy request:", error)
-        setMessage({ type: "error", text: "Failed to create buy request. Please try again." })
+        setMessage({ type: "error", text: "הבקשה נכשלה. אנא נסו שנית" })
       }
     },
   })
@@ -213,7 +300,7 @@ const BuyTicketsPage = () => {
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Buy Tickets
+          קניית כרטיסים
         </Typography>
 
         {message.text && (
@@ -237,8 +324,8 @@ const BuyTicketsPage = () => {
 
         <Paper sx={{ mb: 4 }}>
           <Tabs value={tabValue} onChange={handleTabChange} indicatorColor="primary" textColor="primary" centered>
-            <Tab label="Available Tickets" />
-            <Tab label="Create Buy Request" />
+            <Tab label="כרטיסים זמינים" />
+            <Tab label="צרו בקשה לכרטיסים" />
           </Tabs>
 
           <Box sx={{ p: 3 }}>
@@ -252,31 +339,31 @@ const BuyTicketsPage = () => {
                           <Typography variant="h6">{groupedTicket.event_name}</Typography>
                           {groupedTicket.count > 1 && (
                             <Chip
-                              label={`${groupedTicket.count} available`}
+                              label={`${groupedTicket.count} זמינים`}
                               color="primary"
                               size="small"
                               sx={{ fontWeight: "medium" }}
                             />
                           )}
                         </Box>
-                        <Typography variant="body2">Category: {groupedTicket.category}</Typography>
+                        <Typography variant="body2">קטגוריה: {groupedTicket.category}</Typography>
                         <Typography variant="body2">
-                          Date: {new Date(groupedTicket.event_date).toLocaleDateString()}
+                          תאריך: {new Date(groupedTicket.event_date).toLocaleDateString()}
                         </Typography>
-                        <Typography variant="body2">Price: ${groupedTicket.price}</Typography>
+                        <Typography variant="body2">מחיר: ${groupedTicket.price}</Typography>
                         <Button
                           variant="contained"
                           color="primary"
                           sx={{ mt: 2 }}
-                          onClick={() => handleBuyTicket(groupedTicket.ticketIds[0])}
+                          onClick={() => handleBuyButtonClick(groupedTicket)}
                         >
-                          Buy Now
+                          קנה עכשיו
                         </Button>
                       </Paper>
                     </Grid>
                   ))
                 ) : (
-                  <Typography>No tickets available at the moment.</Typography>
+                  <Typography>אין כרגע כרטיסים זמינים.</Typography>
                 )}
               </Grid>
             )}
@@ -289,7 +376,7 @@ const BuyTicketsPage = () => {
                       fullWidth
                       id="event_name"
                       name="event_name"
-                      label="Event Name"
+                      label="שם אירוע"
                       value={formik.values.event_name}
                       onChange={formik.handleChange}
                       error={formik.touched.event_name && Boolean(formik.errors.event_name)}
@@ -303,16 +390,16 @@ const BuyTicketsPage = () => {
                       id="category"
                       name="category"
                       select
-                      label="Category"
+                      label="קטגוריה"
                       value={formik.values.category}
                       onChange={formik.handleChange}
                       error={formik.touched.category && Boolean(formik.errors.category)}
                       helperText={formik.touched.category && formik.errors.category}
                     >
-                      <MenuItem value="Concert">Concert</MenuItem>
-                      <MenuItem value="Sports">Sports</MenuItem>
-                      <MenuItem value="Theater">Theater</MenuItem>
-                      <MenuItem value="Other">Other</MenuItem>
+                      <MenuItem value="Concert">הופעה</MenuItem>
+                      <MenuItem value="Sports">ספורט</MenuItem>
+                      <MenuItem value="Theater">הצגה</MenuItem>
+                      <MenuItem value="Other">אחר</MenuItem>
                     </TextField>
                   </Grid>
 
@@ -321,7 +408,7 @@ const BuyTicketsPage = () => {
                       fullWidth
                       id="event_date"
                       name="event_date"
-                      label="Event Date"
+                      label="תאריך"
                       type="date"
                       InputLabelProps={{ shrink: true }}
                       value={formik.values.event_date}
@@ -336,7 +423,7 @@ const BuyTicketsPage = () => {
                       fullWidth
                       id="max_price"
                       name="max_price"
-                      label="Maximum Price ($)"
+                      label="מחיר מקסימלי (₪)"
                       type="number"
                       value={formik.values.max_price}
                       onChange={formik.handleChange}
@@ -350,7 +437,7 @@ const BuyTicketsPage = () => {
                       fullWidth
                       id="quantity"
                       name="quantity"
-                      label="Quantity"
+                      label="כמות"
                       type="number"
                       value={formik.values.quantity}
                       onChange={formik.handleChange}
@@ -368,13 +455,76 @@ const BuyTicketsPage = () => {
                   sx={{ mt: 3 }}
                   disabled={formik.isSubmitting}
                 >
-                  Create Buy Request
+                  צור בקשה לכרטיסים
                 </Button>
               </Box>
             )}
           </Box>
         </Paper>
       </Box>
+
+      {/* Multiple Ticket Purchase Dialog */}
+      <Dialog open={purchaseDialogOpen} onClose={() => setPurchaseDialogOpen(false)}>
+        <DialogTitle>בחר כמות</DialogTitle>
+        <DialogContent>
+          {selectedTicket && (
+            <>
+              <Typography variant="h6" gutterBottom>
+                {selectedTicket.event_name}
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                קטגוריה: {selectedTicket.category}
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                תאריך: {new Date(selectedTicket.event_date).toLocaleDateString()}
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                מחיר ליחידה: ₪{selectedTicket.price} 
+              </Typography>
+
+              <Box sx={{ my: 3 }}>
+                <TextField
+                  label="כמות"
+                  type="number"
+                  fullWidth
+                  value={purchaseQuantity}
+                  onChange={(e) => {
+                    const value = Number.parseInt(e.target.value, 10)
+                    if (!isNaN(value)) {
+                      // Ensure quantity is between 1 and available tickets
+                      setPurchaseQuantity(Math.min(Math.max(1, value), selectedTicket.count))
+                    }
+                  }}
+                  inputProps={{
+                    min: 1,
+                    max: selectedTicket.count,
+                  }}
+                  helperText={`${selectedTicket.count} כרטיסים זמינים`}
+                />
+              </Box>
+
+              <Typography variant="h6" sx={{ mt: 2 }}>
+                Total: ${(selectedTicket.price * purchaseQuantity).toFixed(2)}
+              </Typography>
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPurchaseDialogOpen(false)}>ביטול</Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              if (selectedTicket && purchaseQuantity > 0) {
+                handleBuyMultipleTickets(selectedTicket, purchaseQuantity)
+                setPurchaseDialogOpen(false)
+              }
+            }}
+          >
+            רכישה
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }

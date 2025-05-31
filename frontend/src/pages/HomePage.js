@@ -6,18 +6,19 @@ const HomePage = () => {
     <Container maxWidth="lg">
       <Box sx={{ my: 4, textAlign: "center" }}>
         <Typography variant="h2" component="h1" gutterBottom>
-          Welcome to TicketMarket
+          ברוכים הבאים לטיקטמרקט
         </Typography>
         <Typography variant="h5" component="h2" gutterBottom>
-          Buy and sell concert tickets with ease
+          קניה ומכירה של כרטיסים בקלות
         </Typography>
         <Box sx={{ mt: 4 }}>
+        <Button component={Link} to="/login" variant="outlined" color="primary" size="large" sx={{ mr: 2 }}>
+            התחבר
+          </Button>
           <Button component={Link} to="/register" variant="contained" color="primary" size="large" sx={{ mr: 2 }}>
-            Get Started
+            הירשם
           </Button>
-          <Button component={Link} to="/login" variant="outlined" color="primary" size="large">
-            Sign In
-          </Button>
+
         </Box>
       </Box>
 
@@ -25,31 +26,30 @@ const HomePage = () => {
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3, height: "100%" }}>
             <Typography variant="h5" gutterBottom>
-              Buy Tickets
+              קניית כרטיסים
             </Typography>
             <Typography variant="body1">
-              Find tickets for your favorite concerts, sports events, and theater shows.
+              מיצאו כרטיסים לאירועים האהובים עליכם - ספורט, הופעות, הצגות ועוד.
             </Typography>
           </Paper>
         </Grid>
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3, height: "100%" }}>
             <Typography variant="h5" gutterBottom>
-              Sell Tickets
+              מכירת כרטיסים
             </Typography>
             <Typography variant="body1">
-              Easily list your tickets for sale and reach thousands of potential buyers.
+             מיכרו כרטיסים בקלות בצורה הנוחה והאמינה ביותר.
             </Typography>
           </Paper>
         </Grid>
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3, height: "100%" }}>
             <Typography variant="h5" gutterBottom>
-              Request Tickets
+              בקשו כרטיסים
             </Typography>
             <Typography variant="body1">
-              Can't find what you're looking for? Create a buy request and get notified when matching tickets are
-              available.
+              מחפש כרטיס להופעה? מחפש מה לעשות בימים הקרובים? - זה המקום ליצור בקשת חיפוש לכרטיסים בצורה הטובה ביותר.
             </Typography>
           </Paper>
         </Grid>

@@ -16,40 +16,46 @@ const Navbar = () => {
     <AppBar position="static">
       <Toolbar>
         <Typography variant="h6" component={Link} to="/" sx={{ flexGrow: 1, textDecoration: "none", color: "white" }}>
-          TicketMarket
+          טיקטמרקט
         </Typography>
         <Box>
           <Button color="inherit" component={Link} to="/marketplace">
-            Marketplace
+            מרקטפלייס
           </Button>
+                        {/* Add this button after the Marketplace button */}
+<Button color="inherit" component={Link} to="/review/">
+  ביקורות
+</Button>
 
           {isAuthenticated ? (
             <>
               <Button color="inherit" component={Link} to="/dashboard">
-                Dashboard
+                פרופיל אישי
               </Button>
               {(user.role === "Seller" || user.role === "Both") && (
                 <Button color="inherit" component={Link} to="/sell">
-                  Sell Tickets
+                  מכירת כרטיסים
                 </Button>
               )}
               {(user.role === "Buyer" || user.role === "Both") && (
                 <Button color="inherit" component={Link} to="/buy">
-                  Buy Tickets
+                  קניית כרטיסים
                 </Button>
               )}
               <Button color="inherit" onClick={handleLogout}>
-                Logout
+                התנתקות
               </Button>
             </>
           ) : (
             <>
               <Button color="inherit" component={Link} to="/login">
-                Login
+                התחברות
               </Button>
               <Button color="inherit" component={Link} to="/register">
-                Register
+                הרשמה
               </Button>
+
+              
             </>
           )}
         </Box>

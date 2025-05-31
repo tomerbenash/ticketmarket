@@ -83,11 +83,29 @@ const MarketplacePage = () => {
               ticket.event_name === match.eventName &&
               new Date(ticket.event_date).toISOString().split("T")[0] ===
                 new Date(match.eventDate).toISOString().split("T")[0] &&
-              Math.abs(ticket.price - match.price) < 0.01 &&
+                ticket.price <= match.price &&
               ticket.is_sold &&
               ticket.buyer_id === matchingRequest.buyer_id,
           ),
         )
+
+        console.log("Checking match for request:", matchingRequest)
+
+const matchedTickets = allTickets.filter((ticket) =>
+  matchInfo.matches.some(
+    (match) =>
+      ticket.event_name === match.eventName &&
+      new Date(ticket.event_date).toISOString().split("T")[0] ===
+        new Date(match.eventDate).toISOString().split("T")[0] &&
+      ticket.price <= match.price &&
+      ticket.is_sold &&
+      ticket.buyer_id === matchingRequest.buyer_id
+  )
+)
+
+console.log("Matched Tickets:", matchedTickets)
+
+
 
         if (hasMatchingPurchase) {
           newFulfilledRequests.push(matchInfo.requestId)
@@ -203,12 +221,13 @@ const MarketplacePage = () => {
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-          <Typography variant="h4" component="h1">
-            Ticket Marketplace
-          </Typography>
-          <Button startIcon={<RefreshIcon />} variant="outlined" onClick={handleRefresh}>
-            Refresh
+        <Button startIcon={<RefreshIcon />} variant="outlined" onClick={handleRefresh}>
+            רענן
           </Button>
+          <Typography variant="h4" component="h1">
+            טיקטמרקט מרקטפלייס
+          </Typography>
+          
         </Box>
 
         <Box sx={{ mb: 3 }}>
@@ -216,7 +235,7 @@ const MarketplacePage = () => {
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                placeholder="Search events..."
+                placeholder="חפש אירועים"
                 value={searchTerm}
                 onChange={handleSearchChange}
                 InputProps={{
@@ -229,12 +248,12 @@ const MarketplacePage = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField select fullWidth label="Category" value={categoryFilter} onChange={handleCategoryChange}>
-                <MenuItem value="All">All Categories</MenuItem>
-                <MenuItem value="Concert">Concert</MenuItem>
-                <MenuItem value="Sports">Sports</MenuItem>
-                <MenuItem value="Theater">Theater</MenuItem>
-                <MenuItem value="Other">Other</MenuItem>
+              <TextField select fullWidth label="קטגוריה" value={categoryFilter} onChange={handleCategoryChange}>
+                <MenuItem value="All">כל הקטגוריות</MenuItem>
+                <MenuItem value="Concert">הופעות</MenuItem>
+                <MenuItem value="Sports">ספורט</MenuItem>
+                <MenuItem value="Theater">הצגות</MenuItem>
+                <MenuItem value="Other">אחר</MenuItem>
               </TextField>
             </Grid>
           </Grid>
@@ -242,8 +261,9 @@ const MarketplacePage = () => {
 
         <Paper sx={{ mb: 4 }}>
           <Tabs value={tabValue} onChange={handleTabChange} indicatorColor="primary" textColor="primary" centered>
-            <Tab label="Tickets For Sale" />
-            <Tab label="Buy Requests" />
+            <Tab label="כרטיסים למכירה" />
+            <Tab label="בקשות לאירועים" />
+            <Tab label="אירועים קרובים (שבועיים קרובים)" />
           </Tabs>
 
           <Box sx={{ p: 3 }}>
@@ -268,7 +288,7 @@ const MarketplacePage = () => {
                         >
                           {isSoldOut && (
                             <Chip
-                              label="SOLD OUT"
+                              label="נמכר "
                               color="error"
                               sx={{
                                 position: "absolute",
@@ -284,27 +304,27 @@ const MarketplacePage = () => {
                           </Typography>
                           <Box sx={{ flexGrow: 1 }}>
                             <Typography variant="body2" color="text.secondary">
-                              Category: {listing.category}
+                              קטגוריה: {listing.category}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              Date: {new Date(listing.event_date).toLocaleDateString()}
+                              תאריך: {new Date(listing.event_date).toLocaleDateString()}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              Price: ${listing.price}
+                              מחיר: ₪{listing.price}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              Available: {availableQuantity} of {listing.quantity}
+                              כרטיסים זמינים: {availableQuantity} מתוך {listing.quantity}
                             </Typography>
                           </Box>
                           <Typography variant="caption" color="text.secondary" sx={{ mt: 2 }}>
-                            Listed on: {new Date(listing.created_date).toLocaleDateString()}
+                            פורסם ב: {new Date(listing.created_date).toLocaleDateString()}
                           </Typography>
                         </Paper>
                       </Grid>
                     )
                   })
                 ) : (
-                  <Typography>No tickets for sale match your criteria.</Typography>
+                  <Typography>טרם פורסמו כרטיסים למכירה</Typography>
                 )}
               </Grid>
             )}
@@ -313,7 +333,7 @@ const MarketplacePage = () => {
               <Grid container spacing={2}>
                 {filteredBuyRequests.length > 0 ? (
                   filteredBuyRequests.map((request) => {
-                    const isFulfilled = fulfilledRequests.includes(request.request_id)
+                    const isFulfilled = request.fulfilled
 
                     return (
                       <Grid item xs={12} md={6} lg={4} key={request.request_id}>
@@ -329,7 +349,7 @@ const MarketplacePage = () => {
                         >
                           {isFulfilled && (
                             <Chip
-                              label="FULFILLED"
+                              label="מומש"
                               color="primary"
                               sx={{
                                 position: "absolute",
@@ -345,35 +365,104 @@ const MarketplacePage = () => {
                           </Typography>
                           <Box sx={{ flexGrow: 1 }}>
                             <Typography variant="body2" color="text.secondary">
-                              Category: {request.category}
+                              קטגוריה: {request.category}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              Date: {new Date(request.event_date).toLocaleDateString()}
+                              תאריך: {new Date(request.event_date).toLocaleDateString()}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              Max Price: ${request.max_price}
+                              מחיר מקסימלי: ₪{request.max_price}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              Quantity: {request.quantity}
+                              כמות: {request.quantity}
                             </Typography>
                           </Box>
                           <Typography variant="caption" color="text.secondary" sx={{ mt: 2 }}>
-                            Requested on: {new Date(request.created_date).toLocaleDateString()}
+                            בוקש ב: {new Date(request.created_date).toLocaleDateString()}
                           </Typography>
                         </Paper>
                       </Grid>
                     )
                   })
                 ) : (
-                  <Typography>No buy requests match your criteria.</Typography>
+                  <Typography>טרם פורסמו בקשות קניה</Typography>
                 )}
               </Grid>
             )}
+            {tabValue === 2 && (
+  <Grid container spacing={2}>
+    {filteredSellListings.length > 0 ? (
+      filteredSellListings
+        .filter((listing) => {
+          const today = new Date()
+          const eventDate = new Date(listing.event_date)
+          const daysDiff = (eventDate - today) / (1000 * 60 * 60 * 24)
+          return daysDiff >= 0 && daysDiff <= 14
+        })
+        .map((listing) => {
+          const availableQuantity = getAvailableQuantity(listing)
+          const isSoldOut = availableQuantity === 0
+
+          return (
+            <Grid item xs={12} md={6} lg={4} key={listing.sell_id}>
+              <Paper
+                sx={{
+                  p: 2,
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  position: "relative",
+                  opacity: isSoldOut ? 0.8 : 1,
+                }}
+              >
+                {isSoldOut && (
+                  <Chip
+                    label="SOLD OUT"
+                    color="error"
+                    sx={{
+                      position: "absolute",
+                      top: 10,
+                      right: 10,
+                      fontWeight: "bold",
+                      transform: "rotate(5deg)",
+                    }}
+                  />
+                )}
+                <Typography variant="h6" gutterBottom>
+                  {listing.event_name}
+                </Typography>
+                <Box sx={{ flexGrow: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Category: {listing.category}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Date: {new Date(listing.event_date).toLocaleDateString()}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Price: ${listing.price}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Available: {availableQuantity} of {listing.quantity}
+                  </Typography>
+                </Box>
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 2 }}>
+                  Listed on: {new Date(listing.created_date).toLocaleDateString()}
+                </Typography>
+              </Paper>
+            </Grid>
+          )
+        })
+    ) : (
+      <Typography>לא נמאו כרטיסים זמינים לקטגוריה.</Typography>
+    )}
+  </Grid>
+)}
           </Box>
         </Paper>
       </Box>
     </Container>
   )
 }
+
 
 export default MarketplacePage

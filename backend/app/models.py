@@ -121,7 +121,6 @@ class BuyRequest(Base):
     max_price = Column(Float, nullable=False)
     quantity = Column(Integer, nullable=False)
     created_date = Column(DateTime, default=func.now())
-    fulfilled = Column(Boolean, default=False)
 
     # Relationships
     buyer = relationship("User", back_populates="buy_requests")

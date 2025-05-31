@@ -13,7 +13,7 @@ import RegisterPage from "./pages/RegisterPage"
 import DashboardPage from "./pages/DashboardPage"
 import SellTicketsPage from "./pages/SellTicketsPage"
 import BuyTicketsPage from "./pages/BuyTicketsPage"
-import ReviewSellerPage from "./pages/ReviewSellerPage"
+import ReviewsPage from "./pages/ReviewsPage"
 import MarketplacePage from "./pages/MarketplacePage"
 
 // Create theme
@@ -40,6 +40,7 @@ const App = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/marketplace" element={<MarketplacePage />} />
+            <Route path="/review" element={<ReviewsPage />} />
 
             <Route
               path="/dashboard"
@@ -66,16 +67,16 @@ const App = () => {
                   <BuyTicketsPage />
                 </ProtectedRoute>
               }
+       //     />
+        //      <Route
+         //     path="/review/"
+          //    element={
+          //      <ProtectedRoute roles={["Buyer", "Both"]}>
+           //       <ReviewSellerPage />
+         //       </ProtectedRoute>
+           //   }
             />
-
-            <Route
-              path="/review/:sellerId"
-              element={
-                <ProtectedRoute roles={["Buyer", "Both"]}>
-                  <ReviewSellerPage />
-                </ProtectedRoute>
-              }
-            />
+          
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
