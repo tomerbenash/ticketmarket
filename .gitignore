@@ -20,3 +20,5 @@ yarn-error.log
 # === PyCharm ===
 .idea/
 
+frontend/node_modules/
+
