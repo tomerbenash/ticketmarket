@@ -60,6 +60,8 @@ class Transaction(Base):
     buyer_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
     payment_method = Column(String, nullable=False)
     transaction_date = Column(DateTime, default=func.now())
+    price = Column(Float)
+
 
     # Relationships
     ticket = relationship("Ticket", back_populates="transactions")
@@ -128,4 +130,3 @@ class BuyRequest(Base):
     __table_args__ = (
         CheckConstraint("category IN ('Concert', 'Sports', 'Theater', 'Other')"),
     )
-

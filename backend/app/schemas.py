@@ -173,3 +173,18 @@ class MatchNotification(BaseModel):
 #
 #     class Config:
 #         orm_mode = True
+
+
+
+class Transaction(BaseModel):
+    transaction_id: int
+    buyer_id: int
+    seller_id: int
+    ticket_id: int
+    price: float | None = None  # Make it optional for old data
+    event_name: str
+    transaction_date: datetime
+
+
+    class Config:
+        from_attributes = True

@@ -26,6 +26,9 @@ const Navbar = () => {
 <Button color="inherit" component={Link} to="/review/">
   ביקורות
 </Button>
+<Button color="inherit" component={Link} to="/transactions">
+  היסטוריית מכירות
+</Button>
 
           {isAuthenticated ? (
             <>
@@ -54,6 +57,7 @@ const Navbar = () => {
               <Button color="inherit" component={Link} to="/register">
                 הרשמה
               </Button>
+              
 
               
             </>

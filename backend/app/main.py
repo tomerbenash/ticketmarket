@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from . import models
 from .database import engine
-from .routers import users, tickets, sell_listings, buy_requests, reviews
+from .routers import users, tickets, sell_listings, buy_requests, reviews, transactions
 
 # Create the database tables
 models.Base.metadata.create_all(bind=engine)
@@ -25,6 +25,8 @@ app.include_router(tickets.router)
 app.include_router(sell_listings.router)
 app.include_router(buy_requests.router)
 app.include_router(reviews.router)
+
+app.include_router(transactions.router)  # add this line
 
 @app.get("/")
 def read_root():

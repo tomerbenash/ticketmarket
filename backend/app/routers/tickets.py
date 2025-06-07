@@ -104,7 +104,11 @@ def buy_ticket(
         ticket_id=db_ticket.ticket_id,
         seller_id=db_ticket.seller_id,
         buyer_id=current_user.user_id,
+        price=db_ticket.price,
         payment_method="Credit Card"  # Default payment method
+
+
+
     )
 
     db.add(db_transaction)

@@ -417,7 +417,7 @@ console.log("Matched Tickets:", matchedTickets)
               >
                 {isSoldOut && (
                   <Chip
-                    label="SOLD OUT"
+                    label="נמכר"
                     color="error"
                     sx={{
                       position: "absolute",
@@ -433,20 +433,20 @@ console.log("Matched Tickets:", matchedTickets)
                 </Typography>
                 <Box sx={{ flexGrow: 1 }}>
                   <Typography variant="body2" color="text.secondary">
-                    Category: {listing.category}
+                    קטגוריה: {listing.category}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Date: {new Date(listing.event_date).toLocaleDateString()}
+                    תאריך: {new Date(listing.event_date).toLocaleDateString()}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Price: ${listing.price}
+                    מחיר: ₪{listing.price}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Available: {availableQuantity} of {listing.quantity}
+                    כרטיסים זמינים: {availableQuantity} מתוך {listing.quantity}
                   </Typography>
                 </Box>
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 2 }}>
-                  Listed on: {new Date(listing.created_date).toLocaleDateString()}
+                  פורסם ב: {new Date(listing.created_date).toLocaleDateString()}
                 </Typography>
               </Paper>
             </Grid>

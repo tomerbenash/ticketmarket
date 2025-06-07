@@ -15,6 +15,8 @@ import SellTicketsPage from "./pages/SellTicketsPage"
 import BuyTicketsPage from "./pages/BuyTicketsPage"
 import ReviewsPage from "./pages/ReviewsPage"
 import MarketplacePage from "./pages/MarketplacePage"
+import TransactionsPage from './pages/TransactionsPage';
+
 
 // Create theme
 const theme = createTheme({
@@ -41,6 +43,8 @@ const App = () => {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/marketplace" element={<MarketplacePage />} />
             <Route path="/review" element={<ReviewsPage />} />
+            <Route path="/transactions" element={<TransactionsPage />} />
+
 
             <Route
               path="/dashboard"
