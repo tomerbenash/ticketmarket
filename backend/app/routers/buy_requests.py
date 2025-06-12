@@ -54,7 +54,7 @@ def read_buy_requests(
             ticket.buyer_id == request.buyer_id and
             ticket.event_name == request.event_name and
             ticket.event_date == request.event_date and
-            ticket.price == request.max_price
+            ticket.price <= request.max_price
             for ticket in sold_tickets
         )
 

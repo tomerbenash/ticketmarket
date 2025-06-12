@@ -5,10 +5,30 @@ import { useParams, useNavigate } from "react-router-dom"
 import { Container, Typography, Box, Paper, Rating, TextField, Button, Grid, Divider, Alert } from "@mui/material"
 import {getReviews} from '../services/api'
 
+
+import { useAuth } from "../context/AuthContext";
+import { createReview } from "../services/api";
+
+
+
+
 const ReviewsPage = () => {  
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState({ type: "", text: "" })
+
+
+
+  const { user, token } = useAuth();
+
+  const [newReview, setNewReview] = useState({
+    seller_id: "",
+    rating: 0,
+    review_text: "",
+  });
+
+
+
 
 
   useEffect(() => {
@@ -44,6 +64,7 @@ const ReviewsPage = () => {
         <Typography variant="h5" gutterBottom>
           ביקורות
         </Typography>
+
 
         {reviews.length > 0 ? (
           <Grid container spacing={2}>
